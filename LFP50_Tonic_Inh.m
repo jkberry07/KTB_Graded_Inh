@@ -1,6 +1,14 @@
-%Testing k=0.3 and gtonic = 1.8 with no odor ("spontaneous") because that
-%geve the best result in odor-evoked activity
-% of GC voltage)
+%This code is largely based off of the model by Kersen et al., found at https://github.com/dkersen/olfactory-bulb
+%(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
+%doi: 10.1371/journal.pcbi.1009856.)
+
+%Changes to that code:
+%Loading additional distance data for calculating LFP contribution from tonic inhibitory current to the GCs (distance_GC50.mat)
+%Generating normal distributions using randn instead of normrnd (but same means and standard deviations)
+%Number of odor-activated gloms is set to zero and the minimum mean input level is set to 1.75 (lines 218-247)
+%kappa (k) is made a granule cell parameter and made variable (klvl) (line 150)
+%A tonic inhibitory current to the GCs is introduced and corresponding LFP is calculated (lines 427-429, 438-439, 452) (note, sign is flipped relative to other LFP signals, corrected in calculation of overall LFP in code)
+%
 
 rng shuffle
 
@@ -24,180 +32,175 @@ ti_lvls = [0 0.9:0.3:2.1];
 inputlvls = 0.25:0.25:2.5;
 %lvl_index = getenv('SLURM_ARRAY_TASK_ID');
 %lvl_index = str2num(lvl_index);
-numTrials = 5;
-tiindx = 2;
-% tilvl = 0;
-tilvl = ti_lvls(tiindx);
-% k_lvl = 0.006;
 
-for inputindx = 7
-    inputlvl = inputlvls(inputindx);
-    for kindx = 1:numel(k_lvls)
-        k_lvl = k_lvls(kindx);
-        for trial = 1:numTrials
-            % generate the odor input, a different odor for each trial
-            [mOdor_Amp, mOdor_Phase, odorGloms] = odorGenerator(glomeruli, glomArray, mitralNum, odorGlomNum,inputlvl);
-        
-            % Intrinsic MC and GC parameters
-            mParam = zeros(8, mitralNum);
-            gParam = zeros(9, granuleNum);
-        
-            % Establish the intrinsic MC parameters
-            for i = 1:mitralNum
-                while mParam(1,i) >= mParam(2,i)
-                    %mParam(1,i) = normrnd(-58,58/10); % mVr (resting potential)
-                    mParam(1,i) = randn().*58/10 + -58;
-                    %mParam(2,i) = normrnd(-49,49/10); % mVt (threshold potential)
-                    mParam(2,i) = randn().*49/10 + -49;
-                end
-            end
-            %mParam(3,:) = normrnd(0.02,0.02/10,1,mitralNum);
-            mParam(3,:) = randn(1,mitralNum)*.02/10 + .02;%a (Izhikevich parameter a)
-            %mParam(4,:) = normrnd(12,12/10,1,mitralNum); %b_m (Izhikevich parameter b)
-            mParam(4,:) = randn(1,mitralNum)*12/10 + 12;
-        %     mParam(5,:) = normrnd(2.5,2.5/10,1,mitralNum); %k_m (Izhikevich parameter k)
-            mParam(5,:) = randn(1,mitralNum)*2.5/10 + 2.5;
-        
-            for i = 1:mitralNum
-                while mParam(6,i) >= mParam(2,i)
-        %             mParam(6,i) = normrnd(-65,65/10); % c_m (Izhikevich parameter
-        %             c), reset voltage after firing
-                     mParam(6,i) = randn()*65/10 - 65; 
-                end
-            end
-        %     mParam(7,:) = normrnd(13,13/10,1,mitralNum); %d_m (Izhikevich parameter d), correction to recovery current after firing 
-            mParam(7,:) = randn(1,mitralNum)*13/10 + 13;
-        %     mParam(8,:) = normrnd(191,191/10,1,mitralNum); % cap_m (capacitance)
-            mParam(8,:) = randn(1,mitralNum)*191/10 + 191;
-        %     mParam(9,:) = normrnd(0.006,0.006/10,mitralNum,1);
-        
-        
-            % Set the length constant
-        %     L = normrnd(675,675/10,mitralNum,1);
-            L = randn(mitralNum,1)*675/10 + 675;
-            Lmat = repmat(L,[1,granuleNum]); %repeats the column for each gc
-        
-            % MC synaptic parameters 
-        %     mGABA_raw = normrnd(0.13,0.13/10,mitralNum,granuleNum); %here for reducing inhibitory str to MCs
-            mGABA_raw = randn(mitralNum,granuleNum)*0.13/10 + 0.13; %GABA conductance
-            mGABA = mGABA_raw .* exp(-distance./Lmat); % GABA conductance adjusted for distance
-        %     tauG_m = normrnd(18,18/10,mitralNum, granuleNum); % tau_GABA
-            tauG_m = randn(mitralNum, granuleNum)*18/10 + 18; %decay rate on the gating variable
-        
-            % number of external MC receptors
-            numRec_AMPA = 100;
-            numRec_NMDA = 100;
-        
-            % External odor input MC parameters
-        %     mAMPA = normrnd(6.7,6.7/10,mitralNum, numRec_AMPA); % external g_AMPA
-        %     (conductance)
-            mAMPA = randn(mitralNum, numRec_AMPA)*6.7/10 + 6.7; 
-        %     tauA_m = normrnd(14.3108,14.3108/10,mitralNum, numRec_NMDA); % external tau_AMPA
-            tauA_m = randn(mitralNum, numRec_NMDA)*14.3108/10 + 14.3108;
-        %     mNMDA = normrnd(12,12/10,mitralNum, numRec_NMDA); % external g_NMDA
-        %     (conductance)
-            mNMDA = randn(mitralNum, numRec_NMDA)*12/10 + 12;
-        %     tauNr_m = normrnd(13,13/10,mitralNum, numRec_NMDA); % external tau_NMDA_rise
-            tauNr_m = randn(mitralNum, numRec_NMDA)*13/10 + 13;
-        %     tauNd_m = normrnd(70,70/10,mitralNum, numRec_NMDA); % external tau_NMDA_decay
-            tauNd_m = randn(mitralNum, numRec_NMDA)*70/10 + 70;
-        
-            % Establish the intrinsic granule cell parameters
-            for i = 1:granuleNum
-                while gParam(1,i) >= gParam(2,i) || gParam(2,i) - gParam(1,i) < 20
-        %             gParam(1,i) = normrnd(-71,71/10); % gVr (resting potential)
-                    gParam(1,i) = randn()*71/10 - 71;
-        %             gParam(2,i) = normrnd(-39,39/10); % gVt (threshold potential)
-                    gParam(2,i) = randn()*39/10 - 39;
-                end
-            end
-        %     gParam(3,:) = normrnd(0.01,0.01/10,1,granuleNum); %a_g (Izhikevich parameter a)
-            gParam(3,:) = randn(1,granuleNum)*0.01/10 + 0.01;
-        
-            for i = 1:granuleNum
-                % Establish Izhikevich parameters b and k based on rheobase and input resistance
-                rheobase = 0;
-                inres = -1;
-                while (rheobase < 10 || rheobase > 70 || inres < 0.25 || inres > 1.5) || b > 0
-        %             b = normrnd(-2/15,2/10);
-                    b = randn()*2/10 - 2/15;
-        %             k = normrnd(1/15,1/10);
-                    k = randn()*1/10 + 1/15;
-                    rheobase = (b+k*(-gParam(1,i)+gParam(2,i)))^2/(4*k);
-                    inres = 1/(b - k*(gParam(1,i)-gParam(2,i)));
-                end
-                gParam(4,i) = b; %b_g (Izhekevich parameter b)
-                gParam(5,i) = k; %k_g (Izhikevich parameter k)
-            end
-        
-            for i = 1:granuleNum
-                % Establish Izhikevich parameter c and ensure it is not above the
-                % threshold potential
-                while gParam(6,i) >= gParam(2,i)
-        %             gParam(6,i) = normrnd(-75,75/10); %c_g (Izhikevich parameter c)
-                    gParam(6,i) = randn()*75/10 - 75;
-                end
-            end
-        
-        %     gParam(7,:) = normrnd(1.2,1.2/10,1,granuleNum); %d_g (Izhikevich parameter d)
-            gParam(7,:) = randn(1,granuleNum)*1.2/10 + 1.2;
-        %     gParam(8,:) = normrnd(48,48/10,1,granuleNum); %cap_g (capacitance)
-            gParam(8,:) = randn(1,granuleNum)*48/10 + 48;
-            gParam(9,:) = randn(1,granuleNum)*k_lvl/10 + k_lvl; %make kappa a GC
-            %parameter (how much GABA it tends to release independent of
-            %spiking)
-        
-            % GC synaptic parameters
-        %     tauA_g = normrnd(5.5,5.5/10,mitralNum,granuleNum); % tau_AMPA
-            tauA_g = randn(mitralNum,granuleNum)*5.5/10 + 5.5;
-        %     tauNr_g = normrnd(10,10/10,mitralNum,granuleNum); % tau_NMDA_rise
-            tauNr_g = randn(mitralNum,granuleNum)*10/10 + 10;
-        %     tauNd_g = normrnd(80,80/10,mitralNum,granuleNum); % tau_NMDA_decay
-            tauNd_g = randn(mitralNum,granuleNum)*80/10 + 80;
-        %     gAMPA = normrnd(0.73,0.73/10,mitralNum, granuleNum); % g_AMPA
-            gAMPA = randn(mitralNum, granuleNum)*0.73/10 + 0.73;
-        %     gNMDA = normrnd(0.84,0.84/10,mitralNum, granuleNum); % g_NMDA
-            gNMDA = randn(mitralNum, granuleNum)*0.84/10 + 0.84;
-        
-            % set the respiratory rates
-            fnorm = 2/1000; % 2 Hz breathing rate
-            fodor = 6/1000; % 6 Hz sniff rate during odor presentation
-            beginOdor = 0; % begin odor after 1 s of breathing
-            endOdor = beginOdor + 1000; % end odor after 1 s of odor
-        
-        
-            %Find MCs belonging to each glomeruli and assign a respiratory input between
-            %0 and maximum input 
-            mResp_Amp = zeros(mitralNum,1);
-            mResp_Phase = zeros(mitralNum,1);
-            for i = 1:length(glomeruli)
-                R = find(glomArray == glomeruli(i));
-                mean_phase = rand*2*pi;
-                
-                % input strength
-                meanInput = rand*0.25;
-        %         mResp_Amp(R) = normrnd(meanInput,meanInput/10,length(R),1);
-                mResp_Amp(R) = randn(length(R),1)*meanInput/10 + meanInput;
-        
-                % phase of input
-        %         mResp_Phase(R) = normrnd(mean_phase,pi/4,length(R),1);
-                mResp_Phase(R) = randn(length(R),1)*pi/4 + mean_phase;
-            end
-            %clear mean_phase meanInput R
-        
-            mResp_Amp = repmat(mResp_Amp, [1,numRec_AMPA]);
-            mResp_Phase = repmat(mResp_Phase,[1,numRec_AMPA]);
-        
-            [mSpikeTrain, mVolt, gVolt, gSpikes, LFP_AMPA, LFP_NMDA, LFP_GABA, LFP_GABA_ton]  = simulator(network, mParam, gParam,...
-                mResp_Amp, mResp_Phase, fnorm, mOdor_Amp, mOdor_Phase, fodor, beginOdor, endOdor,...
-                mGABA_raw, mGABA, tauG_m, mAMPA, tauA_m, mNMDA, tauNr_m, tauNd_m,...
-                tauA_g, tauNr_g, tauNd_g, gAMPA, gNMDA, distance_3D, distance_GC,tilvl);
-            fname_1 = sprintf('LFP50_spont_SITI2_%dgloms_inputlvl%d_klvl%d_tilvl%d_trial%d.mat',odorGlomNum,inputindx,kindx,tiindx,trial);
-            save(fname_1,'mSpikeTrain','gSpikes', 'odorGloms','LFP_AMPA', 'LFP_GABA', 'LFP_GABA_ton', 'LFP_NMDA','-v7.3');
-        %     save(fname_2, 'mParam','gParam','mGABA','mGABA_raw','tauG_m','mAMPA','tauA_m','mNMDA','tauNr_m',...
-        %         'tauNd_m','tauA_g','tauNr_g','tauNd_g','gAMPA','gNMDA','-v7.3');
+% k_lvl = 0.006; % this was original value for k
+k_lvl = 0.1;
+tilvl = 1.8;
+inputlvl = 1.75;
+
+numTrials = 5;
+for trial = 1:numTrials
+    % generate the odor input, a different odor for each trial
+    [mOdor_Amp, mOdor_Phase, odorGloms] = odorGenerator(glomeruli, glomArray, mitralNum, odorGlomNum,inputlvl);
+
+    % Intrinsic MC and GC parameters
+    mParam = zeros(8, mitralNum);
+    gParam = zeros(9, granuleNum);
+
+    % Establish the intrinsic MC parameters
+    for i = 1:mitralNum
+        while mParam(1,i) >= mParam(2,i)
+            %mParam(1,i) = normrnd(-58,58/10); % mVr (resting potential)
+            mParam(1,i) = randn().*58/10 + -58;
+            %mParam(2,i) = normrnd(-49,49/10); % mVt (threshold potential)
+            mParam(2,i) = randn().*49/10 + -49;
         end
     end
+    %mParam(3,:) = normrnd(0.02,0.02/10,1,mitralNum);
+    mParam(3,:) = randn(1,mitralNum)*.02/10 + .02;%a (Izhikevich parameter a)
+    %mParam(4,:) = normrnd(12,12/10,1,mitralNum); %b_m (Izhikevich parameter b)
+    mParam(4,:) = randn(1,mitralNum)*12/10 + 12;
+%     mParam(5,:) = normrnd(2.5,2.5/10,1,mitralNum); %k_m (Izhikevich parameter k)
+    mParam(5,:) = randn(1,mitralNum)*2.5/10 + 2.5;
+
+    for i = 1:mitralNum
+        while mParam(6,i) >= mParam(2,i)
+%             mParam(6,i) = normrnd(-65,65/10); % c_m (Izhikevich parameter
+%             c), reset voltage after firing
+             mParam(6,i) = randn()*65/10 - 65; 
+        end
+    end
+%     mParam(7,:) = normrnd(13,13/10,1,mitralNum); %d_m (Izhikevich parameter d), correction to recovery current after firing 
+    mParam(7,:) = randn(1,mitralNum)*13/10 + 13;
+%     mParam(8,:) = normrnd(191,191/10,1,mitralNum); % cap_m (capacitance)
+    mParam(8,:) = randn(1,mitralNum)*191/10 + 191;
+%     mParam(9,:) = normrnd(0.006,0.006/10,mitralNum,1);
+
+
+    % Set the length constant
+%     L = normrnd(675,675/10,mitralNum,1);
+    L = randn(mitralNum,1)*675/10 + 675;
+    Lmat = repmat(L,[1,granuleNum]); %repeats the column for each gc
+
+    % MC synaptic parameters 
+%     mGABA_raw = normrnd(0.13,0.13/10,mitralNum,granuleNum); %here for reducing inhibitory str to MCs
+    mGABA_raw = randn(mitralNum,granuleNum)*0.13/10 + 0.13; %GABA conductance
+    mGABA = mGABA_raw .* exp(-distance./Lmat); % GABA conductance adjusted for distance
+%     tauG_m = normrnd(18,18/10,mitralNum, granuleNum); % tau_GABA
+    tauG_m = randn(mitralNum, granuleNum)*18/10 + 18; %decay rate on the gating variable
+
+    % number of external MC receptors
+    numRec_AMPA = 100;
+    numRec_NMDA = 100;
+
+    % External odor input MC parameters
+%     mAMPA = normrnd(6.7,6.7/10,mitralNum, numRec_AMPA); % external g_AMPA
+%     (conductance)
+    mAMPA = randn(mitralNum, numRec_AMPA)*6.7/10 + 6.7; 
+%     tauA_m = normrnd(14.3108,14.3108/10,mitralNum, numRec_NMDA); % external tau_AMPA
+    tauA_m = randn(mitralNum, numRec_NMDA)*14.3108/10 + 14.3108;
+%     mNMDA = normrnd(12,12/10,mitralNum, numRec_NMDA); % external g_NMDA
+%     (conductance)
+    mNMDA = randn(mitralNum, numRec_NMDA)*12/10 + 12;
+%     tauNr_m = normrnd(13,13/10,mitralNum, numRec_NMDA); % external tau_NMDA_rise
+    tauNr_m = randn(mitralNum, numRec_NMDA)*13/10 + 13;
+%     tauNd_m = normrnd(70,70/10,mitralNum, numRec_NMDA); % external tau_NMDA_decay
+    tauNd_m = randn(mitralNum, numRec_NMDA)*70/10 + 70;
+
+    % Establish the intrinsic granule cell parameters
+    for i = 1:granuleNum
+        while gParam(1,i) >= gParam(2,i) || gParam(2,i) - gParam(1,i) < 20
+%             gParam(1,i) = normrnd(-71,71/10); % gVr (resting potential)
+            gParam(1,i) = randn()*71/10 - 71;
+%             gParam(2,i) = normrnd(-39,39/10); % gVt (threshold potential)
+            gParam(2,i) = randn()*39/10 - 39;
+        end
+    end
+%     gParam(3,:) = normrnd(0.01,0.01/10,1,granuleNum); %a_g (Izhikevich parameter a)
+    gParam(3,:) = randn(1,granuleNum)*0.01/10 + 0.01;
+
+    for i = 1:granuleNum
+        % Establish Izhikevich parameters b and k based on rheobase and input resistance
+        rheobase = 0;
+        inres = -1;
+        while (rheobase < 10 || rheobase > 70 || inres < 0.25 || inres > 1.5) || b > 0
+%             b = normrnd(-2/15,2/10);
+            b = randn()*2/10 - 2/15;
+%             k = normrnd(1/15,1/10);
+            k = randn()*1/10 + 1/15;
+            rheobase = (b+k*(-gParam(1,i)+gParam(2,i)))^2/(4*k);
+            inres = 1/(b - k*(gParam(1,i)-gParam(2,i)));
+        end
+        gParam(4,i) = b; %b_g (Izhekevich parameter b)
+        gParam(5,i) = k; %k_g (Izhikevich parameter k)
+    end
+
+    for i = 1:granuleNum
+        % Establish Izhikevich parameter c and ensure it is not above the
+        % threshold potential
+        while gParam(6,i) >= gParam(2,i)
+%             gParam(6,i) = normrnd(-75,75/10); %c_g (Izhikevich parameter c)
+            gParam(6,i) = randn()*75/10 - 75;
+        end
+    end
+
+%     gParam(7,:) = normrnd(1.2,1.2/10,1,granuleNum); %d_g (Izhikevich parameter d)
+    gParam(7,:) = randn(1,granuleNum)*1.2/10 + 1.2;
+%     gParam(8,:) = normrnd(48,48/10,1,granuleNum); %cap_g (capacitance)
+    gParam(8,:) = randn(1,granuleNum)*48/10 + 48;
+    gParam(9,:) = randn(1,granuleNum)*k_lvl/10 + k_lvl; %make kappa a GC
+    %parameter (how much GABA it tends to release independent of
+    %spiking)
+
+    % GC synaptic parameters
+%     tauA_g = normrnd(5.5,5.5/10,mitralNum,granuleNum); % tau_AMPA
+    tauA_g = randn(mitralNum,granuleNum)*5.5/10 + 5.5;
+%     tauNr_g = normrnd(10,10/10,mitralNum,granuleNum); % tau_NMDA_rise
+    tauNr_g = randn(mitralNum,granuleNum)*10/10 + 10;
+%     tauNd_g = normrnd(80,80/10,mitralNum,granuleNum); % tau_NMDA_decay
+    tauNd_g = randn(mitralNum,granuleNum)*80/10 + 80;
+%     gAMPA = normrnd(0.73,0.73/10,mitralNum, granuleNum); % g_AMPA
+    gAMPA = randn(mitralNum, granuleNum)*0.73/10 + 0.73;
+%     gNMDA = normrnd(0.84,0.84/10,mitralNum, granuleNum); % g_NMDA
+    gNMDA = randn(mitralNum, granuleNum)*0.84/10 + 0.84;
+
+    % set the respiratory rates
+    fnorm = 2/1000; % 2 Hz breathing rate
+    fodor = 6/1000; % 6 Hz sniff rate during odor presentation
+    beginOdor = 0; % begin odor after 1 s of breathing
+    endOdor = beginOdor + 1000; % end odor after 1 s of odor
+
+
+    %Find MCs belonging to each glomeruli and assign a respiratory input between
+    %0 and maximum input 
+    mResp_Amp = zeros(mitralNum,1);
+    mResp_Phase = zeros(mitralNum,1);
+    for i = 1:length(glomeruli)
+        R = find(glomArray == glomeruli(i));
+        mean_phase = rand*2*pi;
+        
+        % input strength
+        meanInput = rand*0.25;
+%         mResp_Amp(R) = normrnd(meanInput,meanInput/10,length(R),1);
+        mResp_Amp(R) = randn(length(R),1)*meanInput/10 + meanInput;
+
+        % phase of input
+%         mResp_Phase(R) = normrnd(mean_phase,pi/4,length(R),1);
+        mResp_Phase(R) = randn(length(R),1)*pi/4 + mean_phase;
+    end
+    %clear mean_phase meanInput R
+
+    mResp_Amp = repmat(mResp_Amp, [1,numRec_AMPA]);
+    mResp_Phase = repmat(mResp_Phase,[1,numRec_AMPA]);
+
+    [mSpikeTrain, mVolt, gVolt, gSpikes, LFP_AMPA, LFP_NMDA, LFP_GABA, LFP_GABA_ton]  = simulator(network, mParam, gParam,...
+        mResp_Amp, mResp_Phase, fnorm, mOdor_Amp, mOdor_Phase, fodor, beginOdor, endOdor,...
+        mGABA_raw, mGABA, tauG_m, mAMPA, tauA_m, mNMDA, tauNr_m, tauNd_m,...
+        tauA_g, tauNr_g, tauNd_g, gAMPA, gNMDA, distance_3D, distance_GC,tilvl);
+    fname_1 = sprintf('LFP50_Tonic_Inh_%dgloms_inputlvl%d_klvl%d_tilvl%d_trial%d.mat',odorGlomNum,inputindx,kindx,tiindx,trial);
+    save(fname_1,'mSpikeTrain','gSpikes', 'odorGloms','LFP_AMPA', 'LFP_GABA', 'LFP_GABA_ton', 'LFP_NMDA','-v7.3');
+%     save(fname_2, 'mParam','gParam','mGABA','mGABA_raw','tauG_m','mAMPA','tauA_m','mNMDA','tauNr_m',...
+%         'tauNd_m','tauA_g','tauNr_g','tauNd_g','gAMPA','gNMDA','-v7.3');
 end
 
 
@@ -231,7 +234,6 @@ function [mOdor_Amp, mOdor_Phase, gloms] = odorGenerator(glomeruli, glomArray, m
             % input strength
 %             meanInput = inputlvl + rand*inputlvl; % original baseline is 0.5
             meanInput = inputlvl + rand;
-            %testing input levels from (0.25-0.5) to (1-2)
 %             mOdor_Amp(R) = normrnd(meanInput,meanInput/10,length(R),1);
             mOdor_Amp(R) = randn(length(R),1)*meanInput/10 + meanInput;
 
