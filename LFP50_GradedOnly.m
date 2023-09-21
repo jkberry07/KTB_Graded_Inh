@@ -43,9 +43,11 @@ inputlvls = 0.25:0.25:4.75; %19 levels
                         
 numTrials = 5; %but only doing one at a time
 
-mGABAmean = 0.63;
-inputlvl = 3.25;
-tilvl = 1.8;
+mGABAindx = 8; %0.63 nS
+inputindx = 13; %3.25
+tiindx = 5; %1.8 nS
+
+mGABAmean = mGABA_lvls(mGABAindx); inputlvl = inputlvls(inputindx); tilvl = ti_lvls(tiindx);
 trial = 1;
 
 % generate the odor input, a different odor for each trial
