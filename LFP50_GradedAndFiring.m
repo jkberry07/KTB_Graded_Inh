@@ -1,22 +1,23 @@
-%Same as GPFI1 except doing the missing trials
+%This code is based on the model by Kersen et al., found at https://github.com/dkersen/olfactory-bulb
+%(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
+%doi: 10.1371/journal.pcbi.1009856.)
+
+%Changes to that code:
+%Loading additional distance data for calculating LFP contribution from tonic inhibitory current to the GCs (distance_GC50.mat)
+%Generating normal distributions using randn instead of normrnd (but same means and standard deviations)
+%Number of odor-activated gloms is set to zero and the minimum mean input level is variable
+%the original version of spike-independent inhibition is not implemented (i.e., kappa is not used at all)
+%A tonic inhibitory current to the GCs is introduced and corresponding LFP is calculated (lines 456-459, 467-468, 481) (note, sign is flipped relative to other LFP signals, corrected in calculation of overall LFP in code)
+%At each MC-GC synapse, there is graded MC inhibition directly proportional to the openness of the GC NMDA channel at that synapse, in addition to the inhibition from GC firing
+%Therefore, the gating variable for MC GABA channels has two components, one for graded inhibition (based on GC NMDA current for GCs that didn't
+	%fire on that time step) and one based on GC firing (lines 440 - 448)
+ 
 rng('shuffle')
-lvl_index = getenv('SLURM_ARRAY_TASK_ID'); %1-525
-lvl_index = str2double(lvl_index);
-rng(randi(1000000) + lvl_index) %some previous trials started at the same time and so had the same
-                        % seed for rng. Still initializing rng with shuffle
-                      % above for randi, but by doing randi + lvl_index,
-                          % it's a 1 in a million that it's a duplicate
-if lvl_index == 0
-	mGABAindx = 0; inputindx = 0; tiindx = 0; trial = 0;
-elseif lvl_index == 1
-	mGABAindx = 2; inputindx = 9; tiindx = 1; trial = 2;
-elseif lvl_index == 2
-	mGABAindx = 2; inputindx = 9; tiindx = 1; trial = 3;
-elseif lvl_index == 3
-	mGABAindx = 4; inputindx = 9; tiindx = 5; trial = 2;
-elseif lvl_index == 4
-	mGABAindx = 4; inputindx = 9; tiindx = 5; trial = 3;
-end
+%lvl_index = getenv('SLURM_ARRAY_TASK_ID'); %1-525
+%lvl_index = str2double(lvl_index);
+%rng(randi(1000000) + lvl_index) %some previous trials started at the same time and so had the same
+%                        % seed for rng. Still initializing rng with shuffle
+%                      % above for randi, but adding lvl_index should prevent identical seeding
 
 
 % Load network and distance matrices and glomeruli
@@ -34,24 +35,19 @@ glomeruli = unique(glomArray); %glomArray is list of which glom each MC is conne
 odorGlomNum = 0;
 odorNum = 1;
 
-%k_lvls = 0.1:0.1:0.6; %6 levels
-mGABA_lvls = 0.18:0.05:1.13; %20 levels, doing 5 of them: indexes 12, 14, 16, 18, 20 (.23 to .63, steps of .1)
-ti_lvls = [0 0.9:0.3:2.1]; % only looking at indexes 1, 2, and 5 (0, .9, and 1.8)
-inputlvls = 0.25:0.25:4.75; %this round, now doing 1.75 to 4.75 in steps of .5
-                            %so indices 7, 9, 11, 13, 15, 17, 19
-% lvl_index = getenv('SLURM_ARRAY_TASK_ID');
-% lvl_index = str2double(lvl_index);
-numTrials = 5;
-% tilvl = 0;
-% k_lvl = 0.006;
+mGABA_lvls = 0.18:0.05:1.13; %20 levels
+ti_lvls = [0 0.9:0.3:2.1]; % 6 levels, only looking at indexes 1, 2, and 5 (0, .9, and 1.8)
+inputlvls = 0.25:0.25:4.75; %19 levels
 
+numTrials = 5;%but only doing one at a time here
 
+trial = 1;
 
-mGABAmean = mGABA_lvls(mGABAindx);
+mGABAindx = 8; %0.63 nS
+inputindx = 13; %3.25
+tiindx = 5; %1.8 nS
 
-inputlvl = inputlvls(inputindx);
-
-tilvl = ti_lvls(tiindx);
+mGABAmean = mGABA_lvls(mGABAindx); inputlvl = inputlvls(inputindx); tilvl = ti_lvls(tiindx);
 
     % generate the odor input, a different odor for each trial
 [mOdor_Amp, mOdor_Phase, odorGloms] = odorGenerator(glomeruli, glomArray, mitralNum, odorGlomNum,inputlvl);
