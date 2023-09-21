@@ -31,35 +31,22 @@ odorGlomNum = 0;
 odorNum = 1;
 
 %k_lvls = 0.1:0.1:0.6; %6 levels
-mGABA_lvls = 0.18:0.05:1.13; %20 levels, only looking at 10 of them
+mGABA_lvls = 0.18:0.05:1.13; %20 levels
 ti_lvls = [0 0.9:0.3:2.1]; %6 levels
-inputlvls = 0.25:0.25:4.75; %19 levels, only lvl 19 this time
-lvl_index = getenv('SLURM_ARRAY_TASK_ID'); %1-135
-lvl_index = str2double(lvl_index);
-rng(randi(1000000) + lvl_index) %some previous trials started at the same time and so had the same
-                        % seed for rng. Still initializing rng with shuffle
-                        % above for randi, but by doing randi + lvl_index,
-                        % it's literally 
-if lvl_index == 0
-	mGABAindx = 0; inputindx = 0; tiindx = 0; trial = 0;
-elseif lvl_index == 1
-	mGABAindx = 2; inputindx = 19; tiindx = 5; trial = 5;
-elseif lvl_index == 2
-	mGABAindx = 4; inputindx = 19; tiindx = 1; trial = 2;
-elseif lvl_index == 3
-	mGABAindx = 4; inputindx = 19; tiindx = 1; trial = 3;
-elseif lvl_index == 4
-	mGABAindx = 4; inputindx = 19; tiindx = 1; trial = 1;
-end
+inputlvls = 0.25:0.25:4.75; %19 levels
+%lvl_index = getenv('SLURM_ARRAY_TASK_ID'); %1-135
+%lvl_index = str2double(lvl_index);
+%rng(randi(1000000) + lvl_index) %some previous trials started at the same time and so had the same
+%                        % seed for rng. Still initializing rng with shuffle
+%                        % above for randi, but adding lvl_index should prevent identical seeding
+                     
                         
-                        
-numTrials = 5;
-% tilvl = 0;
-% k_lvl = 0.006;
+numTrials = 5; %but only doing one at a time
 
-mGABAmean = mGABA_lvls(mGABAindx);
-inputlvl = inputlvls(inputindx);
-tilvl = ti_lvls(tiindx);
+mGABAmean = 0.63;
+inputlvl = 3.25;
+tilvl = 1.8;
+trial = 1;
 
 % generate the odor input, a different odor for each trial
 [mOdor_Amp, mOdor_Phase, odorGloms] = odorGenerator(glomeruli, glomArray, mitralNum, odorGlomNum,inputlvl);
