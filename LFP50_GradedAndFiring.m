@@ -1,3 +1,5 @@
+%Runs simulation of the network and saves MC spike trains, GC spike times, and LFP data
+
 %This code is based on the model by Kersen et al., found at https://github.com/dkersen/olfactory-bulb
 %(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
 %doi: 10.1371/journal.pcbi.1009856.)
@@ -11,6 +13,8 @@
 %At each MC-GC synapse, there is graded MC inhibition directly proportional to the openness of the GC NMDA channel at that synapse, in addition to the inhibition from GC firing
 %Therefore, the gating variable for MC GABA channels has two components, one for graded inhibition (based on GC NMDA current for GCs that didn't
 	%fire on that time step) and one based on GC firing (lines 440 - 448)
+
+ 
  
 rng('shuffle')
 %lvl_index = getenv('SLURM_ARRAY_TASK_ID'); %1-525
