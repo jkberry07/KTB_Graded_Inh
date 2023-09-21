@@ -1,6 +1,17 @@
-%Testing k=0.3 and gtonic = 1.8 with no odor ("spontaneous") because that
-%geve the best result in odor-evoked activity
-% of GC voltage)
+%This code is heavily based on the model by Kersen et al., found at https://github.com/dkersen/olfactory-bulb
+%(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
+%doi: 10.1371/journal.pcbi.1009856.)
+
+%Changes to that code:
+%Loading additional distance data for calculating LFP contribution from tonic inhibitory current to the GCs (distance_GC50.mat)
+%Generating normal distributions using randn instead of normrnd (but same means and standard deviations)
+%Number of odor-activated gloms is set to zero and the minimum mean input level is variable
+%the original version of spike-independent inhibition is not implemented (i.e., kappa is not used at all)
+%A tonic inhibitory current to the GCs is introduced and corresponding LFP is calculated (lines 455-457, 466-467, 480) (note, sign is flipped relative to other LFP signals, corrected in calculation of overall LFP in code)
+%At each MC-GC synapse, there is graded MC inhibition directly proportional to the openness of the NMDA channel at that synapse (line 444)
+%Note that in this formulation, a GC spike does not lead to more MC inhibition. MC inhibition is only brought about by GC NMDA current, so inhibition in this version
+	%is reduced by a GC spike. The graded and firing formulation includes both graded inhibition and inhibition via GC spikes
+
 
 rng('shuffle')
 
@@ -379,7 +390,7 @@ function [mSpikeTrain, mVolt, gVolt, gSpikes, LFP_AMPA, LFP_NMDA, LFP_GABA,...
         gX(mFired,:) = gX(mFired,:) + network(mFired,:)*W.*(1-gX(mFired,:));
         
         % All synapses for indirectly connected MCs have GABA receptors
-        % updated
+        % updated (NOT USED IN THIS FORMULATION)
 %         for i = 1:length(mFired)
 %             gRel0 = find(network(mFired(i),:));
 %             gRel = setdiff(gRel0,gFired); %Don't include GCs that fired
