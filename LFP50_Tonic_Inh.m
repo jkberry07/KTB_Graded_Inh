@@ -33,10 +33,12 @@ inputlvls = 0.25:0.25:2.5;
 %lvl_index = getenv('SLURM_ARRAY_TASK_ID');
 %lvl_index = str2num(lvl_index);
 
+inputindx = 7;
+kindx = 1;
+tiindx = 5;
+
 % k_lvl = 0.006; % this was original value for k
-k_lvl = 0.1;
-tilvl = 1.8;
-inputlvl = 1.75;
+k_lvl = k_lvls(kindx); tilvl = ti_lvls(tiindx); inputlvl = inputlvls(inputindx)
 
 numTrials = 5;
 for trial = 1:numTrials
