@@ -1,8 +1,11 @@
-% Calculate the average LFP power spectrum across trials, either for the reduced (smol)
-% network or the full network
+%calculates power spectra from the data, identifies spectral peaks, and plots Figures 3.9 - 3.11, B.1 and B.2 from the dissertation.
+%Power spectra calculation is the same as that of Kersen et al., found at https://github.com/dkersen/olfactory-bulb
+%(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
+%doi: 10.1371/journal.pcbi.1009856.)
 
 
-%Here, treating gamma variable describes 19 - 35 Hz, beta as 9 - 18 Hz, theta as 4 - 8 Hz
+%IMPORTANT: Here, gamma variable describes 19 - 35 Hz, beta as 9 - 18 Hz, theta as 4 - 8 Hz (so they are not the gamma, beta, 
+%and theta bands, they are the three oscillatory regions observed in these experiments)
 
 TS = 0.1;
 fs = 1/(TS/1000);
@@ -17,12 +20,11 @@ numTrials = 5;
 glomtot=89;
 gloms = 0;
 
-inptlvls = 0.25:0.25:4.75;%this round, only doing 3.25 to 4.75 in steps of .5
-                            %so indices 13, 15, 17, 19
+inptlvls = 0.25:0.25:4.75;
 inptindxs = 7:2:19;
 ti_lvls = [0 0.9:0.3:2.1]; % only looking at indexes 1, 2, and 5 (0, .9, and 1.8)
 ti_indxs = [1,2,5];
-mGABA_lvls = 0.18:0.05:1.13; %20 levels, only looking at 5 of them: indexes 2,4,6,8,10 (.23 to .63, steps of .1)
+mGABA_lvls = 0.18:0.05:1.13; %20 levels, only looking at 10 of them
 mGABAindxs = 2:2:20;
 
 % save_loc = 'LFP50_TonicInh/LFPs_with_TonicInh_contribution/';
