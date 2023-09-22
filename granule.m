@@ -1,3 +1,7 @@
+%This code is identical to that of the model by Kersen et al., found at https://github.com/dkersen/olfactory-bulb
+%(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
+%doi: 10.1371/journal.pcbi.1009856.)
+
 classdef granule %defines a granule cell
     properties
         x % x-location of bottom vertex
