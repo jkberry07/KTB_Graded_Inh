@@ -1,7 +1,11 @@
-%Generates a network of MC and GCs (full GC:MC ratio)
+%Generates a network of MC and GCs (15:1 GC:MC ratio)
 
-%Calculated actual synapse location in addition to just the distance from
-%MC in order to calculate distance from "electrode" for LFP
+%This code is mostly the same as that by Kersen et al., found at https://github.com/dkersen/olfactory-bulb
+%(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
+%doi: 10.1371/journal.pcbi.1009856.)
+
+%Calculated actual synapse location in addition to just the distance from MC in order to calculate distance 
+%from "electrode" for LFP (original code on Github from Kersen 2022 didn't calculate the distance3D matrix) (Lines 76-78, 90, 113-114, 135-139)
 
 EPLvolume = 1.5e+9; % volume of EPL in micrometers cubed (Richard et al 2010)
 EPLthickness = 131; % measured thickness of EPL in micrometers
@@ -12,8 +16,7 @@ totalGlomNum = 1800; % total number of glomeruli
 glomDensity = totalGlomNum/EPLsurfarea; % density of glomeruli
 
 % maximum radius of the OB space, modeling the space as a thin cylinder
-% rmax = 300; 300 is 25% sized network
-rmax = 212; %about 1/8 sized
+rmax = 425 %gives an area 50% the size of the original model
 
 % number of glomeruli based on the area of the OB space
 glomNum = round(glomDensity*(pi*rmax^2));
