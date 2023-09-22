@@ -1,4 +1,4 @@
-%Generates a network of MC and GCs (15:1 GC:MC ratio)
+%Generates a network of MC and GCs (15:1 GC:MC ratio) and saves data needed for simulation (note: distance_GC50.mat is calculated using granulecells50.mat)
 
 %This code is mostly the same as that by Kersen et al., found at https://github.com/dkersen/olfactory-bulb
 %(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
@@ -180,9 +180,9 @@ for i = 1:mitralNum
 end
 
 % save arrays and network matrix
-save('mitralCells8th.mat', 'mitralArray','-v7.3');
-save('fullNetwork8th.mat', 'network', '-v7.3');
-save('granuleCells8th.mat', 'granuleArray', '-v7.3');
-save('glomeruli8th.mat', 'glomXYarray','glomArray','-v7.3');
-save('distance8th.mat', 'distance','-v7.3');
-save('distance_3D8th.mat', 'distance_3D','-v7.3');
+save('mitralCells50.mat', 'mitralArray','-v7.3');
+save('fullNetwork50.mat', 'network', '-v7.3');
+save('granuleCells50.mat', 'granuleArray', '-v7.3');
+save('glomeruli50.mat', 'glomXYarray','glomArray','-v7.3');
+save('distance50.mat', 'distance','-v7.3');
+save('distance_3D50.mat', 'distance_3D','-v7.3');
