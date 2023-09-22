@@ -7,11 +7,16 @@ LFP50_*.m runs simulations of various iterations of the model
 
  
 Fig_GPFI_Osc_Full.m calculates power spectra from the data and plots Figures 3.9 - 3.11, B.1 and B.2 from the dissertation. 
+
 Fig_GPFI_gspiking.m calculates the average GC firing rate and spike participation and plots Figure 3.8 from the dissertation.
-Fig_GPFI_mspiking.m calculates the average MC firing rate, MC spike participation, and MC spike distributions and plots Figures 3.7 and 3.12 from the dissertation
+
+Fig_GPFI_mspiking.m calculates the average MC firing rate, MC spike participation, and MC spike distributions and plots Figures 3.7 and 3.12 from the dissertation.
 Note: The figures for "Graded Only" used the same code, just loaded trial data from "Graded Only" trials.
+
 Fig_SITI2_gSpiking.m plots Figure 3.3(c) from the dissertation
+
 Fig_SITI2_mSpiking.m plots Figure 3.3(d) and (e) from the dissertation
+
 Fig_spont_SITI2_osc_heatmaps.m plots Figure 3.3(a) from the dissertation
 
 distance50.mat, distance_3D50.mat, distance_GC50.mat, fullNetwork50.mat, and glomeruli50.mat are data needed for running the simulations.
