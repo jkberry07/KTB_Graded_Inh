@@ -1,5 +1,4 @@
-%calculate total mitral cell spikes (and average per mc) vs inhibitory
-%level and mc spike rate over the trial in 19 ms bins
+%calculates the average MC firing rate, MC spike participation, and MC spike distributions and plots Figures 3.7 and 3.12 from the dissertation.
 
 
 % mcspikerate = zeros(19,8001); %will cut out the first 200 ms
