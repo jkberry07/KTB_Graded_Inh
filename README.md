@@ -19,4 +19,8 @@ Fig_SITI2_mSpiking.m plots Figure 3.3(d) and (e) from the dissertation
 
 Fig_spont_SITI2_osc_heatmaps.m plots Figure 3.3(a) from the dissertation
 
-distance50.mat, distance_3D50.mat, distance_GC50.mat, fullNetwork50.mat, and glomeruli50.mat are data needed for running the simulations.
+distance50.mat, distance_3D50.mat, distance_GC50.mat, fullNetwork50.mat, and glomeruli50.mat are data needed for running the simulations (generated from networkGenerator50.m). mitralCells50.mat contains the properties of the MCs in the network, but is not necessary for running simulations. granuleCells50 is too large to put on github, but is available at https://drive.google.com/file/d/1Yfc-Mfj-2HLsi6-qkEzOg0T0uF2mb2VF/view?usp=drive_link (and is also not necessary for running simulations).
+
+granule.m and mitral.m define the granule cell and mitral cell classes respectively, and are as found at https://github.com/dkersen/olfactory-bulb (Kersen 2022).
+
+networkGenerator50.m generates the network connectivity and is as found at https://github.com/dkersen/olfactory-bulb (Kersen 2022) with a few minor changes.
