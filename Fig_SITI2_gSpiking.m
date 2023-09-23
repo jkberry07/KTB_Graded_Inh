@@ -1,5 +1,4 @@
-%Calculate percentage of GCs that spiked above a certain level for various
-%values of GC GABA conductance
+%Calculates GC participation and plots Figure 3.3(c) from the dissertation
 
 clearvars
 
