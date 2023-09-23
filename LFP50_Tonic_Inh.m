@@ -1,4 +1,4 @@
-%Runs simulation of the network and saves MC spike trains, GC spike times, and LFP data
+%Runs simulation of the network (with tonic inhibition) and saves MC spike trains, GC spike times, and LFP data
 
 %This code is based on the model by Kersen et al., found at https://github.com/dkersen/olfactory-bulb
 %(D. E. C. Kersen, G. Tavoni, and V. Balasubramanian. Connectivity and dynamics in the olfactory bulb. PLoS Comput Biol, 18(2):e1009856, 2022. ISSN 1553-7358.
@@ -201,7 +201,7 @@ for trial = 1:numTrials
         mResp_Amp, mResp_Phase, fnorm, mOdor_Amp, mOdor_Phase, fodor, beginOdor, endOdor,...
         mGABA_raw, mGABA, tauG_m, mAMPA, tauA_m, mNMDA, tauNr_m, tauNd_m,...
         tauA_g, tauNr_g, tauNd_g, gAMPA, gNMDA, distance_3D, distance_GC,tilvl);
-    fname_1 = sprintf('LFP50_Tonic_Inh_%dgloms_inputlvl%d_klvl%d_tilvl%d_trial%d.mat',odorGlomNum,inputindx,kindx,tiindx,trial);
+    fname_1 = sprintf('LFP50_spont_SITI2_%dgloms_inputlvl%d_klvl%d_tilvl%d_trial%d.mat',odorGlomNum,inputindx,kindx,tiindx,trial);
     save(fname_1,'mSpikeTrain','gSpikes', 'odorGloms','LFP_AMPA', 'LFP_GABA', 'LFP_GABA_ton', 'LFP_NMDA','-v7.3');
 %     save(fname_2, 'mParam','gParam','mGABA','mGABA_raw','tauG_m','mAMPA','tauA_m','mNMDA','tauNr_m',...
 %         'tauNd_m','tauA_g','tauNr_g','tauNd_g','gAMPA','gNMDA','-v7.3');
