@@ -40,7 +40,7 @@ kindx = 1;
 tiindx = 5;
 
 % k_lvl = 0.006; % this was original value for k
-k_lvl = k_lvls(kindx); tilvl = ti_lvls(tiindx); inputlvl = inputlvls(inputindx)
+k_lvl = k_lvls(kindx); tilvl = ti_lvls(tiindx); inputlvl = inputlvls(inputindx);
 
 numTrials = 5;
 for trial = 1:numTrials
