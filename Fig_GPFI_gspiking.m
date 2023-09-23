@@ -1,5 +1,4 @@
-%Calculate percentage of GCs that spiked above a certain level for various
-%values of GC GABA conductancemGABAindx
+%Calculates average population GC firing rate and the GC participation and plots figure 3.8 from the dissertation
 
 clearvars
 
