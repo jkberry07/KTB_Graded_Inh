@@ -24,3 +24,5 @@ distance50.mat, distance_3D50.mat, distance_GC50.mat, fullNetwork50.mat, and glo
 granule.m and mitral.m define the granule cell and mitral cell classes respectively, and are as found at https://github.com/dkersen/olfactory-bulb (Kersen 2022).
 
 networkGenerator50.m generates the network connectivity and is as found at https://github.com/dkersen/olfactory-bulb (Kersen 2022) with a few minor changes.
+
+For questions, contact Kendall Berry at jkberry@ucdavis.edu.
